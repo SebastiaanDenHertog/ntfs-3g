@@ -791,7 +791,7 @@ static boolean outputmap(const char *volume, const char *dir)
 	char buf[256];
 	int fn;
 	char *fullname;
-	char *backup;
+	char *backup = NULL;
 	struct USERMAPPING *mapping;
 	boolean done;
 	boolean err;
@@ -910,6 +910,8 @@ static boolean outputmap(const char *volume, const char *dir)
 	if (!done)
 		fprintf(stderr, "* Could not create mapping file \"%s\"\n",
 				fullname);
+	free(backup);
+	free(fullname);
 	return (done);
 }
 
@@ -1020,7 +1022,8 @@ static boolean sanitize(void)
 						group->defined = AGREED;
 						group->next = firstmapping;
 						firstmapping = group;
-					}
+					} else 
+					free(group);
 				}
 			}
 		}
