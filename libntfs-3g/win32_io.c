@@ -27,9 +27,9 @@
 #include "config.h"
 
 #ifdef HAVE_WINDOWS_H
-#define BOOL WINBOOL /* avoid conflicting definitions of BOOL */
+#define _NO_BOOL_TYPEDEF /* supported by both Cygwin and MinGW-w64's w32api */ 
 #include <windows.h>
-#undef BOOL
+#undef _NO_BOOL_TYPEDEF
 #endif
 
 #ifdef HAVE_STDLIB_H
@@ -44,15 +44,6 @@
 #define _ANONYMOUS_STRUCT
 typedef unsigned long long DWORD64;
 #endif
-
-typedef struct {
-        DWORD data1;     /* The first eight hexadecimal digits of the GUID. */
-        WORD data2;     /* The first group of four hexadecimal digits. */
-        WORD data3;     /* The second group of four hexadecimal digits. */ 
-        char data4[8];    /* The first two bytes are the third group of four
-                           hexadecimal digits. The remaining six bytes are the
-                           final 12 hexadecimal digits. */
-} GUID;
 
 #include <winioctl.h>
 
@@ -70,7 +61,9 @@ typedef struct {
 #endif
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#ifndef __CYGWIN__ /* See https://cygwin.com/faq.html#faq.programming.stat64 */
 #define stat stat64
+#endif
 #define st_blocks  st_rdev /* emulate st_blocks, missing in Windows */
 #endif
 
@@ -133,6 +126,7 @@ static LPFN_SETFILEPOINTEREX fnSetFilePointerEx = NULL;
 #else
 #define FNPOSTFIX "A"
 #endif
+
 
 enum { /* see http://msdn.microsoft.com/en-us/library/cc704588(v=prot.10).aspx */
    STATUS_UNKNOWN = -1,
