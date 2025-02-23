@@ -1,0 +1,31 @@
+name: ntfs-3g Linux Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        version: [ubuntu-latest, ubuntu-20.04]
+        compiler: [gcc, clang]
+    name: Build on ${{ matrix.version }} with ${{ matrix.compiler }}
+    runs-on: ${{ matrix.version }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies on Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgcrypt20-dev
+
+      - name: Run autogen and configure
+        env:
+          CC: ${{ matrix.compiler }}
+        run: |
+          ./autogen.sh || echo "Non-critical error during autogen.sh"
+          ./configure
+
+      - name: Build
+        run: make

@@ -1,0 +1,31 @@
+name: ntfs-3g macOS Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        version: [macos-latest, macos-11]
+        compiler: [gcc, clang]
+    name: Build on ${{ matrix.version }} with ${{ matrix.compiler }}
+    runs-on: ${{ matrix.version }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies on macOS
+        run: |
+          brew update
+          brew install autoconf automake libtool libgcrypt
+
+      - name: Run autogen and configure
+        env:
+          CC: ${{ matrix.compiler }}
+        run: |
+          ./autogen.sh || echo "Non-critical error during autogen.sh"
+          ./configure
+
+      - name: Build
+        run: make
