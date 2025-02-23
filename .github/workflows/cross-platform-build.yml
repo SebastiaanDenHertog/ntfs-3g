@@ -1,0 +1,87 @@
+name: ntfs-3g Cross-Platform Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          # Linux builds
+          - os: ubuntu-latest
+            compiler: gcc
+          - os: ubuntu-latest
+            compiler: clang
+          - os: ubuntu-20.04
+            compiler: gcc
+          - os: ubuntu-20.04
+            compiler: clang
+          # macOS builds
+          - os: macos-latest
+            compiler: gcc
+          - os: macos-latest
+            compiler: clang
+          - os: macos-11
+            compiler: gcc
+          - os: macos-11
+            compiler: clang
+          # Windows builds (using MSYS2 – currently only gcc is supported)
+          - os: windows-latest
+            compiler: gcc
+          - os: windows-2019
+            compiler: gcc
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Install dependencies on Linux
+      - name: Install dependencies on Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgcrypt20-dev
+
+      # Install dependencies on macOS
+      - name: Install dependencies on macOS
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install libgcrypt
+
+      # For Windows, set up the MSYS2 environment and install required packages
+      - name: Set up MSYS2 on Windows
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-libgcrypt
+
+      # Build steps for Windows using the MSYS2 shell
+      - name: Configure and Build on Windows (MSYS2)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        env:
+          CC: ${{ matrix.compiler }}
+        run: |
+          ./autogen.sh
+          ./configure
+          make
+
+      # Build steps for Linux and macOS
+      - name: Configure on Linux/macOS
+        if: runner.os != 'Windows'
+        env:
+          CC: ${{ matrix.compiler }}
+        run: |
+          ./autogen.sh
+          ./configure
+
+      - name: Build on Linux/macOS
+        if: runner.os != 'Windows'
+        run: make

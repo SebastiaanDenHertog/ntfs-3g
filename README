@@ -189,3 +189,6 @@ ntfscp - Overwrite files on an NTFS partition.
 ntfssecaudit - Audit the security metadata.
 
 ntfsusermap - Assistance for building a user mapping file.
+
+
+![Cross-Platform Build](https://github.com/SebastiaanDenHertog/ntfs-3g/actions/workflows/cross-platform-build.yml/badge.svg)
